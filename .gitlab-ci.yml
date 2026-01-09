@@ -16,6 +16,10 @@ workflow:
       when: always
       changes:
         - Dockerfile
+    
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    
     - when: never
 
 variables:
