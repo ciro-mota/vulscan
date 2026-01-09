@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ciro-mota/vulscan/docker-publish.yml?style=for-the-badge&logo=github)
-![Docker Image Size](https://img.shields.io/docker/image-size/ciromota/vulscan/latest?style=for-the-badge&logo=Linux-Containers)
+![Docker Image Size](https://img.shields.io/docker/image-size/ciromota/vulscan-nmap/latest?style=for-the-badge&logo=Linux-Containers)
 
 ## 📖 Introduction
 
