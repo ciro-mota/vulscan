@@ -12,6 +12,8 @@ on:
   push:
     paths:
      - 'Dockerfile'
+  schedule:
+    - cron: '33 3 * * 1'
   workflow_dispatch:
     inputs:
       manual_commit_message:

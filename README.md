@@ -30,6 +30,9 @@ This containerized version uses up-to-date vulnerability public databases from o
 
 These databases are automatically downloaded during the Docker image build process, ensuring you always have recent vulnerability data.
 
+> [!IMPORTANT]
+> An image is automatically generated every Monday to ensure that the databases are always up-to-date in the image.
+
 ## 📋 Requirements
 
 - Docker or Podman.
