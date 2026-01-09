@@ -51,7 +51,7 @@ Test:
   before_script:
     - docker build --cache-from ciromota/vulscan-nmap:latest -t $IMAGE_TAG .
   script:
-    - docker run --rm $IMAGE_TAG --version
+    - docker container run --rm --privileged $IMAGE_TAG --version
   after_script:
     - echo "Container test completed successfully"
 
