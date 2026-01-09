@@ -2,10 +2,10 @@ include:
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
 default:
-  image: docker:29.0.2
+  image: docker:29.1.3
 
 services:
-  - docker:29.0.2-dind
+  - docker:29.1.3-dind
 
 workflow:
   rules:
@@ -21,7 +21,7 @@ workflow:
 variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
-  IMAGE_TAG: ciromota/nessus-scanner:$CI_COMMIT_SHA
+  IMAGE_TAG: ciromota/vulscan-nmap:$CI_COMMIT_SHA
 
 stages:
   - build
@@ -33,8 +33,8 @@ stages:
 Build:
   stage: build
   script:
-    - docker build --cache-from ciromota/nessus-scanner:latest -t $IMAGE_TAG .
-    - docker tag $IMAGE_TAG ciromota/nessus-scanner:latest
+    - docker build --cache-from ciromota/vulscan-nmap:latest -t $IMAGE_TAG .
+    - docker tag $IMAGE_TAG ciromota/vulscan-nmap:latest
 
 Lint:
   stage: lint
@@ -45,25 +45,22 @@ Lint:
 Test:
   stage: test
   before_script:
-    - docker build --cache-from ciromota/nessus-scanner:latest -t $IMAGE_TAG .
+    - docker build --cache-from ciromota/vulscan-nmap:latest -t $IMAGE_TAG .
   script:
-    - docker container run -td --name nessus-scanner -p 8834:8834 $IMAGE_TAG
-    - sleep 5
-    - docker ps | grep nessus-scanner
+    - docker run --rm $IMAGE_TAG --version
   after_script:
-    - docker stop nessus-scanner || true
-    - docker rm nessus-scanner || true
+    - echo "Container test completed successfully"
 
 container_scanning:
   stage: scan
   variables:
-    CS_IMAGE: ciromota/nessus-scanner:latest
+    CS_IMAGE: ciromota/vulscan-nmap:latest
 
 # push_and_sign:
 #   stage: deploy
-#   image: docker:29.0.2
+#   image: docker:29.1.3
 #   services:
-#     - docker:29.0.2-dind
+#     - docker:29.1.3-dind
 #   variables:
 #     COSIGN_YES: "true"
 #   id_tokens:
@@ -73,7 +70,7 @@ container_scanning:
 #     - apk add --update cosign
 #     - echo $DOCKERHUB_TOKEN | cosign login docker.io -u $DOCKER_USER --password-stdin
 #   script:
-#     - docker buildx build -t ciromota/nessus-scanner:latest .
-#     - docker push ciromota/nessus-scanner:latest
-#     - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ciromota/nessus-scanner)
+#     - docker buildx build -t ciromota/vulscan-nmap:latest .
+#     - docker push ciromota/vulscan-nmap:latest
+#     - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ciromota/vulscan-nmap)
 #     - cosign sign $IMAGE_DIGEST
