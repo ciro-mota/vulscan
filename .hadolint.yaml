@@ -1,0 +1,10 @@
+failure-threshold: warning
+format: tty
+ignored:
+- DL3006
+- DL3007
+- DL3018
+trustedRegistries:
+- docker.io
+- "*.gcr.io"
+- cgr.dev

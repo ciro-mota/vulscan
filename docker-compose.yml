@@ -1,0 +1,12 @@
+services:
+  vulscan:
+    image: ciromota/vulscan:latest
+    container_name: vulscan
+#    build: .
+    privileged: true
+    volumes:
+       - /etc/localtime:/etc/localtime:ro
+    environment:
+       - TARGET=${TARGET:-example.com}
+    command: ["-sV", "--script=vulscan/vulscan.nse", "${TARGET:-example.com}"]
+    restart: "no"

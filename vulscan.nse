@@ -1,212 +1,17 @@
 description = [[
+Vulscan enhances nmap to a vulnerability scanner by matching service versions
+against offline vulnerability databases.
 
-INTRODUCTION
+Usage:
+  nmap -sV --script=vulscan/vulscan.nse <target>
 
-Vulscan is a module which enhances nmap to a vulnerability scanner. The
-nmap option -sV enables version detection per service which is used to
-determine potential flaws according to the identified product. The data
-is looked up in an offline version of VulDB.
-
-INSTALLATION
-
-Please install the files into the following folder of your Nmap
-installation:
-
-   Nmap\scripts\vulscan\*
-
-USAGE
-
-You have to run the following minimal command to initiate a simple
-vulnerability scan:
-
-   nmap -sV --script=vulscan/vulscan.nse www.example.com
-
-VULNERABILITY DATABASE
-
-There are the following pre-installed databases available at the
-moment:
-
-   scipvuldb.csv       | https://vuldb.com
-   cve.csv             | https://cve.mitre.org
-   securityfocus.csv   | https://www.securityfocus.com/bid/
-   xforce.csv          | https://exchange.xforce.ibmcloud.com/
-   expliotdb.csv       | https://www.exploit-db.com
-   openvas.csv         | http://www.openvas.org
-   securitytracker.csv | https://www.securitytracker.com (end-of-life)
-   osvdb.csv           | http://www.osvdb.org (end-of-life)
-
-SINGLE DATABASE MODE
-
-You may execute vulscan with the following argument to use a single
-database:
-
-   --script-args vulscandb=your_own_database
-
-It is also possible to create and reference your own databases. This
-requires to create a database file, which has the following structure:
-
-   <id>;<title>
-
-Just execute vulscan like you would by refering to one of the pre-
-delivered databases. Feel free to share your own database and
-vulnerability connection with me, to add it to the official
-repository.
-
-UPDATE DATABASE
-
-The vulnerability databases are updated and assembled on a regularly
-basis. To support the latest disclosed vulnerabilities, keep your local
-vulnerability databases up-to-date.
-
-If you want to update your databases, go to the following web site and
-download these files:
-
-   https://www.computec.ch/mruef/software/nmap_nse_vulscan/cve.csv
-   https://www.computec.ch/mruef/software/nmap_nse_vulscan/exploitdb.csv
-   https://www.computec.ch/mruef/software/nmap_nse_vulscan/openvas.csv
-   https://www.computec.ch/mruef/software/nmap_nse_vulscan/osvdb.csv
-   https://www.computec.ch/mruef/software/nmap_nse_vulscan/scipvuldb.csv
-   https://www.computec.ch/mruef/software/nmap_nse_vulscan/securityfocus.csv
-   https://www.computec.ch/mruef/software/nmap_nse_vulscan/securitytracker.csv
-   https://www.computec.ch/mruef/software/nmap_nse_vulscan/xforce.csv
-
-Copy the files into your vulscan folder:
-
-   /vulscan/
-
-Clone the GitHub repository like this:
-
-   git clone https://github.com/scipag/vulscan scipag_vulscan
-   ln -s `pwd`/scipag_vulscan /usr/share/nmap/scripts/vulscan    
-
-VERSION DETECTION
-
-If the version detection was able to identify the software version and
-the vulnerability database is providing such details, also this data
-is matched.
-
-Disabling this feature might introduce false-positive but might also
-eliminate false-negatives and increase performance slighty. If you want
-to disable additional version matching, use the following argument:
-
-   --script-args vulscanversiondetection=0
-
-Version detection of vulscan is only as good as Nmap version detection
-and the vulnerability database entries are. Some databases do not
-provide conclusive version information, which may lead to a lot of
-false-positives (as can be seen for Apache servers).
-
-MATCH PRIORITY
-
-The script is trying to identify the best matches only. If no positive
-match could been found, the best possible match (with might be a false-
-positive) is put on display.
-
-If you want to show all matches, which might introduce a lot of false-
-positives but might be useful for further investigation, use the
-following argument:
-
-   --script-args vulscanshowall=1
-
-INTERACTIVE MODE
-
-The interactive mode helps you to override version detection results
-for every port. Use the following argument to enable the interactive
-mode:
-
-   --script-args vulscaninteractive=1
-
-REPORTING
-
-All matching results are printed one by line. The default layout for
-this is:
-
-   [{id}] {title}\n
-
-It is possible to use another pre-defined report structure with the
-following argument:
-
-   --script-args vulscanoutput=details
-   --script-args vulscanoutput=listid
-   --script-args vulscanoutput=listlink
-   --script-args vulscanoutput=listtitle
-
-You may enforce your own report structure by using the following
-argument (some examples):
-
-   --script-args vulscanoutput='{link}\n{title}\n\n'
-   --script-args vulscanoutput='ID: {id} - Title: {title} ({matches})\n'
-   --script-args vulscanoutput='{id} | {product} | {version}\n'
-
-Supported are the following elements for a dynamic report template:
-
-   {id}      ID of the vulnerability
-   {title}   Title of the vulnerability
-   {matches} Count of matches
-   {product} Matched product string(s)
-   {version} Matched version string(s)
-   {link}    Link to the vulnerability database entry
-   \n        Newline
-   \t        Tab
-
-Every default database comes with an url and a link, which is used
-during the scanning and might be accessed as {link} within the
-customized report template. To use custom database links, use the
-following argument:
-
-   --script-args "vulscandblink=http://example.org/{id}"
-
-DISCLAIMER
-
-Keep in mind that this kind of derivative vulnerability scanning
-heavily relies on the confidence of the version detection of nmap, the
-amount of documented vulnerebilities and the accuracy of pattern
-matching. The existence of potential flaws is not verified with
-additional scanning nor exploiting techniques.
-
-LINKS
-
-Download: https://www.computec.ch/mruef/?s=software&l=x
-
+Arguments:
+  --script-args vulscandb=<db>           Use single database
+  --script-args vulscanoutput=<format>   Output format (details/listid/listlink/listtitle)
+  --script-args vulscanshowall=1         Show all matches
+  --script-args vulscanversiondetection=0 Disable version matching
+  --script-args vulscaninteractive=1     Interactive mode
 ]]
-
---@output
--- PORT   STATE SERVICE REASON  VERSION
--- 25/tcp open  smtp    syn-ack Exim smtpd 4.69
--- | osvdb (22 findings):
--- | [2440] qmailadmin autorespond Multiple Variable Remote Overflow
--- | [3538] qmail Long SMTP Session DoS
--- | [5850] qmail RCPT TO Command Remote Overflow DoS
--- | [14176] MasqMail Piped Aliases Privilege Escalation
-
---@changelog
--- v2.2 | 09/20/2019 | Marc Ruef | Fixed support for Nmap 7.80 onwards
--- v2.1 | 04/17/2019 | Marc Ruef | Minor fixes
--- v2.0 | 08/14/2013 | Marc Ruef | Considering version data
--- v1.0 | 06/18/2013 | Marc Ruef | Dynamic report structures
--- v0.8 | 06/17/2013 | Marc Ruef | Multi-database support
--- v0.7 | 06/14/2013 | Marc Ruef | Complete re-write of search engine
--- v0.6 | 05/22/2010 | Marc Ruef | Added interactive mode for guided testing
--- v0.5 | 05/21/2010 | Marc Ruef | Seperate functions for search engine
--- v0.4 | 05/20/2010 | Marc Ruef | Tweaked analysis modules
--- v0.3 | 05/19/2010 | Marc Ruef | Fuzzy search for product names included
--- v0.2 | 05/18/2010 | Marc Ruef | Uniqueness of found vulnerabilities
--- v0.1 | 05/17/2010 | Marc Ruef | First alpha running basic identification
-
---@bugs
--- Fuzzy search is sometimes catching wrong products
-
---@todos
--- Create product lookup table to match nmap<->db
--- Enhance nmap/db to be CPE compliant (https://cpe.mitre.org)
--- Display of identification confidence (e.g. +full_match, -partial_match)
--- Add auto-update feature for databases (download & install)
-
---@thanks
--- I would like to thank a number of people which supported me in
--- developing this script: Stefan Friedli, Simon Zumstein, Sean Rütschi,
--- Pascal Schaufelberger, David Fifield, Nabil Ouchn, Doggy Dog, Matt
--- Brown, Matthew Phillips, and Sebastian Brabetzl.
 
 author = "Marc Ruef, marc.ruef-at-computec.ch, https://www.computec.ch/mruef/"
 license = "Same as Nmap--See https://nmap.org/book/man-legal.html"
@@ -283,14 +88,8 @@ action = function(host, port)
 		end
 	else
 		-- Add your own database, if you want to include it in the multi db mode
-		db[1] = {name="VulDB",			file="scipvuldb.csv",		url="https://vuldb.com",			link="https://vuldb.com/id.{id}"}
-		db[2] = {name="MITRE CVE",		file="cve.csv",			url="https://cve.mitre.org",			link="https://cve.mitre.org/cgi-bin/cvename.cgi?name={id}"}
-		db[3] = {name="SecurityFocus",		file="securityfocus.csv",	url="https://www.securityfocus.com/bid/",	link="https://www.securityfocus.com/bid/{id}"}
-		db[4] = {name="IBM X-Force",		file="xforce.csv",		url="https://exchange.xforce.ibmcloud.com",	link="https://exchange.xforce.ibmcloud.com/vulnerabilities/{id}"}
-		db[5] = {name="Exploit-DB",		file="exploitdb.csv",		url="https://www.exploit-db.com",		link="https://www.exploit-db.com/exploits/{id}"}
-		db[6] = {name="OpenVAS (Nessus)",	file="openvas.csv",		url="http://www.openvas.org",			link="https://www.tenable.com/plugins/nessus/{id}"}
-		db[7] = {name="SecurityTracker",	file="securitytracker.csv",	url="https://www.securitytracker.com",		link="https://www.securitytracker.com/id/{id}"}
-		db[8] = {name="OSVDB",			file="osvdb.csv",		url="http://www.osvdb.org",			link="http://www.osvdb.org/{id}"}
+		db[1] = {name="CISA KEV",		file="known_exploited_vulnerabilities.csv",	url="https://www.cisa.gov/known-exploited-vulnerabilities-catalog",	link="https://nvd.nist.gov/vuln/detail/{id}"}
+		db[2] = {name="Exploit-DB",		file="files_exploits.csv",			url="https://www.exploit-db.com",					link="https://www.exploit-db.com/exploits/{id}"}
 
 		stdnse.print_debug(1, "vulscan: Using multi db mode (" .. #db .. " databases) ...")
 		for i,v in ipairs(db) do

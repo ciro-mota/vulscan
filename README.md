@@ -1,139 +1,130 @@
-# vulscan - Vulnerability Scanning with Nmap
+# Vulscan-Nmap - Vulnerability Scanning with Nmap
 
-<p align="center">
-<img src="./logo.png" width="300px">
-</p>
+[![License](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ciro-mota/vulscan/docker-publish.yml?style=for-the-badge&logo=github)
+![Docker Image Size](https://img.shields.io/docker/image-size/ciromota/vulscan/latest?style=for-the-badge&logo=Linux-Containers)
 
-## Introduction
+## 📖 Introduction
 
-Vulscan is a module which enhances nmap to a vulnerability scanner. The nmap option -sV enables version detection per service which is used to determine potential flaws according to the identified product. The data is looked up in an offline version of VulDB.
+Vulscan-Nmap is a module which enhances `Nmap` to find vulnerability in systems. The `-sV` option enables version detection per service, which is used to identify potential flaws according to the detected product versions. The vulnerability data is looked up in updated offline databases.
 
-![Nmap NSE Vulscan](https://www.computec.ch/projekte/vulscan/introduction/screenshot.png)
+## ⚠️ Disclaimer
 
-## Installation
+> [!NOTE]
+> This is a fork of the [scipag/vulscan](https://github.com/scipag/vulscan) project, which is no longer actively maintained. This version includes significant modifications and updated vulnerability databases.
 
-Please install the files into the following folder of your Nmap installation:
+This vulnerability scanning tool relies on:
+- Nmap's version detection accuracy
+- Completeness of vulnerability databases
+- Pattern matching accuracy
 
-    Nmap\scripts\vulscan\*
+The existence of potential flaws is not verified through additional scanning or exploitation techniques. Results should be validated manually.
 
-Clone the GitHub repository like this:
+## 🗄️ Vulnerability Databases
 
-    git clone https://github.com/scipag/vulscan scipag_vulscan
-    ln -s `pwd`/scipag_vulscan /usr/share/nmap/scripts/vulscan
+This containerized version uses up-to-date vulnerability public databases from official sources:
 
-## Usage
+* **CISA KEV** (Known Exploited Vulnerabilities) - https://www.cisa.gov/known-exploited-vulnerabilities-catalog
+* **Exploit-DB** - https://www.exploit-db.com
 
-You have to run the following minimal command to initiate a simple vulnerability scan:
+These databases are automatically downloaded during the Docker image build process, ensuring you always have recent vulnerability data.
 
-    nmap -sV --script=vulscan/vulscan.nse www.example.com
+## 📋 Requirements
 
-## Vulnerability Database
+- Docker or Podman.
+- `--privileged` flag (required for Nmap network scanning capabilities).
 
-There are the following pre-installed databases available at the moment:
+## 🚀 Quick Start
 
-* scipvuldb.csv - https://vuldb.com
-* cve.csv - https://cve.mitre.org
-* securityfocus.csv - https://www.securityfocus.com/bid/
-* xforce.csv - https://exchange.xforce.ibmcloud.com/
-* expliotdb.csv - https://www.exploit-db.com
-* openvas.csv - http://www.openvas.org
-* securitytracker.csv - https://www.securitytracker.com (end-of-life)
-* osvdb.csv - http://www.osvdb.org (end-of-life)
+### Docker Usage
 
-## Single Database Mode
+**Basic scan (terminal output):**
 
-You may execute vulscan with the following argument to use a single database:
+```bash
+docker container run -it --privileged vulscan-nmap -sV --script=vulscan/vulscan.nse example.com
+```
 
-    --script-args vulscandb=your_own_database
+**Scan with HTML report and without terminal output:**
 
-It is also possible to create and reference your own databases. This requires to create a database file, which has the following structure:
+```bash
+mkdir -p ~/reports && docker run --rm --privileged -v ~/reports:/scan \
+  --entrypoint /bin/sh vulscan-nmap -c \
+  'nmap -sV --script=vulscan/vulscan.nse -oX /scan/report.xml "$@" > /dev/null && \
+   xsltproc /scan/report.xml -o /scan/report.html && \
+   rm /scan/report.xml && \
+   echo "Report saved: ~/reports/report.html"' \
+  _ 192.168.1.100
+```
 
-    <id>;<title>
+> [!TIP]
+> Change `example.com` and/or `192.168.1.100` to the desired target.
 
-Just execute vulscan like you would by refering to one of the pre-delivered databases. Feel free to share your own database and vulnerability connection with me, to add it to the official repository.
+### Docker Compose
 
-## Update Database
+```bash
+TARGET=192.168.1.100 docker-compose up -d
+```
 
-The vulnerability databases are updated and assembled on a regularly basis. To support the latest disclosed vulnerabilities, keep your local vulnerability databases up-to-date.
+## 🔨 Custom Build
 
-To automatically update the databases, simply set execution permissions to the `update.sh` file and run it:
+- Uncomment line 5 in `docker-compose.yml` for build and run:
 
-    chmod 744 update.sh
-    ./update.sh
+```bash
+docker buildx build -t vulscan-nmap .
+```
 
-If you want to manually update your databases, go to the following web site and download these files:
+## ⚙️ Script Arguments
 
-* https://www.computec.ch/projekte/vulscan/download/cve.csv
-* https://www.computec.ch/projekte/vulscan/download/exploitdb.csv
-* https://www.computec.ch/projekte/vulscan/download/openvas.csv
-* https://www.computec.ch/projekte/vulscan/download/osvdb.csv
-* https://www.computec.ch/projekte/vulscan/download/scipvuldb.csv
-* https://www.computec.ch/projekte/vulscan/download/securityfocus.csv
-* https://www.computec.ch/projekte/vulscan/download/securitytracker.csv
-* https://www.computec.ch/projekte/vulscan/download/xforce.csv
+### Version Detection
 
-Copy the files into your vulscan folder:
+Disable additional version matching (may reduce false-positives):
 
-    /vulscan/
+```bash
+--script-args vulscanversiondetection=0
+```
 
-## Version Detection
+### Show All Matches
 
-If the version detection was able to identify the software version and the vulnerability database is providing such details, also this data is matched.
+Display all vulnerability matches (may increase false-positives):
 
-Disabling this feature might introduce false-positive but might also eliminate false-negatives and increase performance slighty. If you want to disable additional version matching, use the following argument:
+```bash
+--script-args vulscanshowall=1
+```
 
-    --script-args vulscanversiondetection=0
+### Interactive Mode
 
-Version detection of vulscan is only as good as Nmap version detection and the vulnerability database entries are. Some databases do not provide conclusive version information, which may lead to a lot of false-positives (as can be seen for Apache servers).
+Override version detection results for each port:
 
-## Match Priority
+```bash
+--script-args vulscaninteractive=1
+```
 
-The script is trying to identify the best matches only. If no positive match could been found, the best possible match (with might be a false-positive) is put on display.
+### Output Formats
 
-If you want to show all matches, which might introduce a lot of false-positives but might be useful for further investigation, use the following argument:
+Use predefined report structures:
 
-    --script-args vulscanshowall=1
+```bash
+--script-args vulscanoutput=details
+--script-args vulscanoutput=listid
+--script-args vulscanoutput=listlink
+--script-args vulscanoutput=listtitle
+```
 
-## Interactive Mode
+Custom output format:
 
-The interactive mode helps you to override version detection results for every port. Use the following argument to enable the interactive mode:
+```bash
+--script-args vulscanoutput='[{id}] {title} - {link}\n'
+```
 
-    --script-args vulscaninteractive=1
+**Available template variables:**
+* `{id}` - Vulnerability ID
+* `{title}` - Vulnerability title
+* `{matches}` - Number of matches
+* `{product}` - Matched product string(s)
+* `{version}` - Matched version string(s)
+* `{link}` - Link to vulnerability database entry
+* `\n` - Newline
+* `\t` - Tab
 
-## Reporting
-
-All matching results are printed one by line. The default layout for this is:
-
-    [{id}] {title}\n
-
-It is possible to use another pre-defined report structure with the following argument:
-
-    --script-args vulscanoutput=details
-    --script-args vulscanoutput=listid
-    --script-args vulscanoutput=listlink
-    --script-args vulscanoutput=listtitle
-
-You may enforce your own report structure by using the following argument (some examples):
-
-    --script-args vulscanoutput='{link}\n{title}\n\n'
-    --script-args vulscanoutput='ID: {id} - Title: {title} ({matches})\n'
-    --script-args vulscanoutput='{id} | {product} | {version}\n'
-
-Supported are the following elements for a dynamic report template:
-
-* {id} - ID of the vulnerability
-* {title} - Title of the vulnerability
-* {matches} - Count of matches
-* {product} - Matched product string(s)
-* {version} - Matched version string(s)
-* {link} - Link to the vulnerability database entry
-* \n - Newline
-* \t - Tab
-
-Every default database comes with an url and a link, which is used during the scanning and might be accessed as {link} within the customized report template. To use custom database links, use the following argument:
-
-    --script-args "vulscandblink=http://example.org/{id}"
-
-## Disclaimer
-
-Keep in mind that this kind of derivative vulnerability scanning heavily relies on the confidence of the version detection of nmap, the amount of documented vulnerabilities and the accuracy of pattern matching. The existence of potential flaws is not verified with additional scanning nor exploiting techniques.
+![vulscan-nmap in a terminal execution](/assets/vulscan-terminal.png)
