@@ -1,7 +1,7 @@
 name: Docker Vulscan CI
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
   packages: write
   security-events: write
@@ -150,3 +150,25 @@ jobs:
             images+="${tag}@${DIGEST} "
           done
           cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${images}
+
+  Automatic-commit:
+    needs: Push
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'schedule'
+
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v5
+
+    - name: Create build timestamp
+      run: |
+        echo "Last successful build: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" > .last-build
+    
+    - name: Commit and push changes
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "chore: automated weekly build completed [skip ci]"
+        file_pattern: '.last-build'
+        commit_user_name: github-actions[bot]
+        commit_user_email: github-actions[bot]@users.noreply.github.com
+        commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
