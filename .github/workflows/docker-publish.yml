@@ -68,7 +68,7 @@ jobs:
 
     - name: Run Trivy vulnerability scanner
       id: scan
-      uses: aquasecurity/trivy-action@0.33.1
+      uses: aquasecurity/trivy-action@0.34.0
       with:
         image-ref: ciromota/vulscan-nmap:latest
         format: sarif
