@@ -68,13 +68,14 @@ jobs:
 
     - name: Run Trivy vulnerability scanner
       id: scan
-      uses: aquasecurity/trivy-action@0.33.1
+      uses: aquasecurity/trivy-action@master
       with:
         image-ref: ciromota/vulscan-nmap:latest
         format: sarif
         output: trivy-results.sarif
         severity: CRITICAL,HIGH,MEDIUM,LOW
         exit-code: 0
+        version: latest
     
     - name: Install Trivy CLI to generate GITHUB_STEP_SUMMARY
       run: |
