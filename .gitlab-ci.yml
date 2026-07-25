@@ -2,10 +2,10 @@ include:
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
 default:
-  image: docker:29.1.3
+  image: docker:29.6
 
 services:
-  - docker:29.1.3-dind
+  - docker:29.6-dind
 
 workflow:
   rules:
@@ -62,9 +62,9 @@ container_scanning:
 
 # push_and_sign:
 #   stage: deploy
-#   image: docker:29.1.3
+#   image: docker:29.6
 #   services:
-#     - docker:29.1.3-dind
+#     - docker:29.6-dind
 #   variables:
 #     COSIGN_YES: "true"
 #   id_tokens:
