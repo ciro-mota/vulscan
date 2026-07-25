@@ -1,6 +1,7 @@
-FROM alpine:3.23 AS builder
+FROM alpine:3.24 AS builder
 
 RUN apk add \
+    ca-certificates \
     nmap \
     nmap-scripts \
     wget --no-cache
@@ -9,8 +10,8 @@ WORKDIR /vulscan
 
 COPY vulscan.nse .
 
-RUN wget -q https://www.cisa.gov/sites/default/files/csv/known_exploited_vulnerabilities.csv && \
-    wget -q https://gitlab.com/exploit-database/exploitdb/-/raw/main/files_exploits.csv
+RUN wget -q -O known_exploited_vulnerabilities.csv https://www.cisa.gov/sites/default/files/csv/known_exploited_vulnerabilities.csv && \
+    wget -q -O files_exploits.csv https://gitlab.com/exploit-database/exploitdb/-/raw/main/files_exploits.csv
 
 FROM cgr.dev/chainguard/wolfi-base:latest AS vulscan-distroless
 
@@ -22,8 +23,8 @@ LABEL org.opencontainers.image.documentation="https://github.com/ciro-mota/vulsc
 LABEL org.opencontainers.image.source="https://github.com/ciro-mota/vulscan"
 
 COPY --from=builder /usr/share/nmap/nse_main.lua /usr/share/nmap/
-COPY --from=builder /usr/share/nmap/scripts /usr/share/nmap/
-COPY --from=builder /usr/share/nmap/nselib /usr/share/nmap/
+COPY --from=builder /usr/share/nmap/scripts/ /usr/share/nmap/scripts/
+COPY --from=builder /usr/share/nmap/nselib/ /usr/share/nmap/nselib/
 COPY --from=builder /vulscan /usr/share/nmap/scripts/vulscan
 
 RUN apk add --no-cache nmap \
