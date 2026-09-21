@@ -13,7 +13,7 @@ COPY vulscan.nse .
 RUN wget -q -O known_exploited_vulnerabilities.csv https://www.cisa.gov/sites/default/files/csv/known_exploited_vulnerabilities.csv && \
     wget -q -O files_exploits.csv https://gitlab.com/exploit-database/exploitdb/-/raw/main/files_exploits.csv
 
-FROM cgr.dev/chainguard/wolfi-base:latest AS vulscan-distroless
+FROM chainguard/wolfi-base:latest AS vulscan-distroless
 
 LABEL org.opencontainers.image.title="Vulscan"
 LABEL org.opencontainers.image.description="Advanced vulnerability scanning with Nmap NSE."
