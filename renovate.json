@@ -1,0 +1,38 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "automerge": false,
+  "dependencyDashboard": true,
+  "schedule": ["* 1 * * 1"],
+
+  "extends": [
+    "config:recommended",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests"
+  ],
+
+  "timezone": "America/Bahia",
+
+  "docker-compose": {
+    "enabled": true
+  },
+
+  "packageRules": [
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "groupName": "github actions"
+    },
+
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+
+      "labels": [
+        "major-update",
+        "manual-review"
+      ]
+    }
+  ]
+}
