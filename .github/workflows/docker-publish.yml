@@ -14,6 +14,11 @@ on:
       - main
     paths:
      - 'Dockerfile'
+  pull_request:
+    branches:
+      - main
+    paths:
+     - 'Dockerfile'
   workflow_dispatch:
     inputs:
       manual_commit_message:
@@ -97,6 +102,7 @@ jobs:
   Push:
     needs: Test
     runs-on: ubuntu-26.04
+    if: github.event_name != 'pull_request'
 
     steps:
     - name: Check out the repo
@@ -151,25 +157,3 @@ jobs:
             images+="${tag}@${DIGEST} "
           done
           cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${images}
-
-  Automatic-commit:
-    needs: Push
-    runs-on: ubuntu-26.04
-    if: github.event_name == 'schedule'
-
-    steps:
-    - name: Check out the repo
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-    - name: Create build timestamp
-      run: |
-        echo "Last successful build: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" > .last-build
-    
-    - name: Commit and push changes
-      uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d # v7.2.0
-      with:
-        commit_message: "chore: automated weekly build completed [skip ci]"
-        file_pattern: '.last-build'
-        commit_user_name: github-actions[bot]
-        commit_user_email: github-actions[bot]@users.noreply.github.com
-        commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
