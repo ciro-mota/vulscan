@@ -27,7 +27,6 @@ jobs:
             );
 
             const merged = [];
-            let imageChanged = false;
 
             for (const pr of prs) {
               const isRenovate = pr.user.login === "renovate[bot]";
@@ -44,15 +43,6 @@ jobs:
               }
 
               try {
-                const files = await github.paginate(
-                  github.rest.pulls.listFiles,
-                  { owner, repo, pull_number: pr.number, per_page: 100 }
-                );
-
-                const affectsImage = files.some(f =>
-                  f.filename === "Dockerfile" || f.filename.startsWith("app/")
-                );
-
                 console.log(`Trying merge for #${pr.number}`);
 
                 await github.rest.pulls.merge({
@@ -64,26 +54,14 @@ jobs:
 
                 console.log(`Merged #${pr.number}`);
                 merged.push(pr.number);
-
-                if (affectsImage) {
-                  imageChanged = true;
-                }
               } catch (err) {
                 console.log(`Skipping #${pr.number}: ${err.message}`);
               }
             }
 
-            if (merged.length === 0) {
-              console.log("No PR merged; the build will not be triggered.");
-              return;
-            }
-
-            if (!imageChanged) {
-              console.log("Merged PRs do not change the image; the build will not be triggered.");
-              return;
-            }
-
-            const list = merged.map(n => `#${n}`).join(", ");
+            const message = merged.length > 0
+              ? `Renovate: weekly update (${merged.map(n => `#${n}`).join(", ")})`
+              : "Scheduled weekly build";
 
             await github.rest.actions.createWorkflowDispatch({
               owner,
@@ -91,8 +69,8 @@ jobs:
               workflow_id: "docker-publish.yml",
               ref: "main",
               inputs: {
-                manual_commit_message: `Renovate: weekly update (${list})`
+                manual_commit_message: message
               }
             });
 
-            console.log(`Build launched for ${list}`);
+            console.log(`Build launched: ${message}`);
