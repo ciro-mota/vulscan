@@ -1,0 +1,34 @@
+{
+  "extends": [
+    "config:recommended"
+  ],
+
+  "timezone": "America/Bahia",
+
+  "ignoreTests": true,
+
+  "pinDigests": true,
+
+  "automerge": false,
+
+  "docker-compose": {
+    "enabled": true
+  },
+
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["dhi.io/alpine-base"]
+    },
+
+    {
+      "matchUpdateTypes": ["pin", "digest", "patch", "minor"],
+      "addLabels": ["automerge"]
+    },
+
+    {
+      "matchUpdateTypes": ["major"],
+      "addLabels": ["major-update", "manual-review"]
+    }
+  ]
+}
