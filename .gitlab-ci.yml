@@ -2,10 +2,10 @@ include:
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
 default:
-  image: docker:29.8@sha256:3f3c01aaaebf7cce837356b688b7c059a4749f10bd7660dec7c58fc454a283f0
+  image: docker:29.9@sha256:7bf70dcb85c822e3fa6f2d332143e474b99147b9d7b39102b0cfe8b04a7dd61b
 
 services:
-  - docker:29.8-dind@sha256:3f3c01aaaebf7cce837356b688b7c059a4749f10bd7660dec7c58fc454a283f0
+  - docker:29.9-dind@sha256:7bf70dcb85c822e3fa6f2d332143e474b99147b9d7b39102b0cfe8b04a7dd61b
 
 workflow:
   rules:
